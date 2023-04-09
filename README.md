@@ -34,6 +34,12 @@ dans le .env créez une variable DATABASE_URL avec vos identifiants :
 Si votre provider est différent de postgres n'oubliez pas de le changer dans
 [prisma/schema.prisma](./prisma/schema.prisma)
 
+## lancer les migration
+
+```
+    npx prisma db push
+```
+
 ## Jeux de données
 
 [vous trouverez des jeux de données ici](./database/script)
