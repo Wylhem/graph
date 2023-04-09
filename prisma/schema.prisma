@@ -1,0 +1,195 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model classes {
+  cls_id              Int               @id @default(autoincrement())
+  cls_label           String?           @db.VarChar
+  cls_trainingsession Int?
+  cls_createdat       DateTime?         @default(now()) @db.Timestamp(6)
+  cls_updatedat       DateTime?         @db.Timestamp(6)
+  training_session    training_session? @relation(fields: [cls_trainingsession], references: [trs_id], onDelete: NoAction, onUpdate: NoAction, map: "classes_trainingsession_fk")
+  groupes             groupes[]
+}
+
+model classroom {
+  clr_id            Int            @id @default(autoincrement())
+  clr_label         String?        @db.VarChar
+  clr_establishment Int?
+  clr_createdat     DateTime?      @default(now()) @db.Timestamp(6)
+  cls_updatedat     DateTime?      @db.Timestamp(6)
+  establishment     establishment? @relation(fields: [clr_establishment], references: [est_id], onDelete: NoAction, onUpdate: NoAction, map: "classroom_establishment_fk")
+  lesson            lesson[]
+}
+
+model establishment {
+  est_id              Int             @id(map: "unique_est_id") @default(autoincrement())
+  est_publicname      String?         @db.VarChar
+  est_name            String?         @db.VarChar
+  est_address         String?         @db.VarChar
+  est_parentsite      Int?
+  est_createdat       DateTime?       @default(now()) @db.Timestamp(6)
+  est_updatedat       DateTime?       @db.Timestamp(6)
+  classroom           classroom[]
+  establishment       establishment?  @relation("establishmentToestablishment", fields: [est_parentsite], references: [est_id], onDelete: NoAction, onUpdate: NoAction, map: "establishment_parent_site")
+  other_establishment establishment[] @relation("establishmentToestablishment")
+  training            training[]
+}
+
+model exam {
+  exm_id        Int       @id @default(autoincrement())
+  exm_grade     Int?
+  exm_date      DateTime? @db.Timestamp(6)
+  exm_student   Int
+  exm_professor Int
+  exm_subject   Int
+  exm_createdat DateTime? @default(now()) @db.Timestamp(6)
+  exm_updatedat DateTime? @db.Timestamp(6)
+  professor     professor @relation(fields: [exm_professor], references: [pro_id], onDelete: NoAction, onUpdate: NoAction, map: "exam_professor_fk")
+  student       student   @relation(fields: [exm_student], references: [std_id], onDelete: NoAction, onUpdate: NoAction, map: "exam_student_fk")
+  subject       subject   @relation(fields: [exm_subject], references: [sub_id], onDelete: NoAction, onUpdate: NoAction, map: "exam_subject_fk")
+}
+
+model groupes {
+  grp_id        Int       @id @default(autoincrement())
+  grp_label     String?   @db.VarChar
+  grp_classes   Int?
+  cls_createdat DateTime? @default(now()) @db.Timestamp(6)
+  cls_updatedat DateTime? @db.Timestamp(6)
+  classes       classes?  @relation(fields: [grp_classes], references: [cls_id], onDelete: NoAction, onUpdate: NoAction, map: "groupes_class_fk")
+  lesson        lesson[]
+  student       student[]
+}
+
+model lesson {
+  les_id            Int        @id @default(autoincrement())
+  les_scheduleStart DateTime?  @db.Timestamp(6)
+  les_subject       Int?
+  les_professor     Int?
+  les_groupes       Int?
+  les_classroom     Int?
+  les_createdat     DateTime?  @default(now()) @db.Timestamp(6)
+  les_updatedat     DateTime?  @db.Timestamp(6)
+  les_scheduleEnd   DateTime?  @db.Timestamp(6)
+  absence           absence[]
+  classroom         classroom? @relation(fields: [les_classroom], references: [clr_id], onDelete: NoAction, onUpdate: NoAction, map: "lesson_classroom_fk")
+  groupes           groupes?   @relation(fields: [les_groupes], references: [grp_id], onDelete: NoAction, onUpdate: NoAction, map: "lesson_group_fk")
+  professor         professor? @relation(fields: [les_professor], references: [pro_id], onDelete: NoAction, onUpdate: NoAction, map: "lesson_professor_fk")
+  subject           subject?   @relation(fields: [les_subject], references: [sub_id], onDelete: NoAction, onUpdate: NoAction, map: "lesson_subject_fk")
+}
+
+model person {
+  per_id        Int         @id @default(autoincrement())
+  per_firstname String?     @db.VarChar
+  per_lastname  String?     @db.VarChar
+  per_createdat DateTime?   @default(now()) @db.Timestamp(6)
+  per_updatedat DateTime?   @db.Timestamp(6)
+  professor     professor[]
+  student       student[]
+  users         users[]
+}
+
+model professor {
+  pro_id        Int       @id @default(autoincrement())
+  pro_person    Int?
+  pro_createdat DateTime? @default(now()) @db.Timestamp(6)
+  pro_updatedat DateTime? @db.Timestamp(6)
+  exam          exam[]
+  lesson        lesson[]
+  person        person?   @relation(fields: [pro_person], references: [per_id], onDelete: NoAction, onUpdate: NoAction, map: "professor_person_fk")
+}
+
+model profile {
+  prf_id        Int       @id @default(autoincrement())
+  prf_label     String?   @db.VarChar
+  prf_createdat DateTime? @default(now()) @db.Timestamp(6)
+  prf_updatedat DateTime? @db.Timestamp(6)
+  users         users[]
+}
+
+model student {
+  std_id          Int       @id @default(autoincrement())
+  std_isineu      Boolean?
+  std_disability  Boolean?
+  std_scholarship Boolean?
+  std_createdat   DateTime? @default(now()) @db.Timestamp(6)
+  std_updatedat   DateTime? @db.Timestamp(6)
+  std_person      Int?
+  std_groupes     Int?
+  absence         absence[]
+  exam            exam[]
+  groupes         groupes?  @relation(fields: [std_groupes], references: [grp_id], onDelete: NoAction, onUpdate: NoAction, map: "student_group")
+  person          person?   @relation(fields: [std_person], references: [per_id], onDelete: NoAction, onUpdate: NoAction, map: "student_person_fk")
+}
+
+model subject {
+  sub_id              Int               @id @default(autoincrement())
+  sub_label           String?           @db.VarChar
+  sub_trainingsession Int?
+  sub_createdat       DateTime?         @default(now()) @db.Timestamp(6)
+  sub_updatedat       DateTime?         @db.Timestamp(6)
+  exam                exam[]
+  lesson              lesson[]
+  training_session    training_session? @relation(fields: [sub_trainingsession], references: [trs_id], onDelete: NoAction, onUpdate: NoAction, map: "subject_training_fk")
+}
+
+model training {
+  tra_id             Int                @id @default(autoincrement())
+  tra_publicname     String?            @db.VarChar
+  tra_name           String?            @db.VarChar
+  tra_establishment  Int?
+  tra_createdat      DateTime?          @default(now()) @db.Timestamp(6)
+  tra_updatedat      DateTime?          @db.Timestamp(6)
+  tra_trainingfamily Int?
+  establishment      establishment?     @relation(fields: [tra_establishment], references: [est_id], onDelete: NoAction, onUpdate: NoAction, map: "training_establishment_fk")
+  training_family    training_family?   @relation(fields: [tra_trainingfamily], references: [trf_id])
+  training_session   training_session[]
+}
+
+model training_session {
+  trs_id         Int       @id @default(autoincrement())
+  trs_publicname String?   @db.VarChar
+  trs_name       String?   @db.VarChar
+  trs_entryyear  Int?
+  trs_endyear    Int?
+  trs_training   Int?
+  trs_createdat  DateTime? @default(now()) @db.Timestamp(6)
+  trs_updatedat  DateTime? @db.Timestamp(6)
+  classes        classes[]
+  subject        subject[]
+  training       training? @relation(fields: [trs_training], references: [tra_id], onDelete: NoAction, onUpdate: NoAction, map: "training_session_training_fk")
+}
+
+model users {
+  usr_id        Int       @id @default(autoincrement())
+  usr_email     String    @unique @db.VarChar
+  usr_createdat DateTime? @default(now()) @db.Timestamp(6)
+  usr_updatedat DateTime? @db.Timestamp(6)
+  usr_person    Int?
+  usr_profile   Int?
+  person        person?   @relation(fields: [usr_person], references: [per_id], onDelete: NoAction, onUpdate: NoAction, map: "users_person_fk")
+  profile       profile?  @relation(fields: [usr_profile], references: [prf_id], onDelete: NoAction, onUpdate: NoAction, map: "users_profile_fk")
+}
+
+model absence {
+  abs_id        Int       @id @default(autoincrement())
+  abs_student   Int?
+  abs_lesson    Int?
+  abs_createdat DateTime? @default(now()) @db.Timestamp(6)
+  abs_updatedat DateTime? @db.Timestamp(6)
+  lesson        lesson?   @relation(fields: [abs_lesson], references: [les_id])
+  student       student?  @relation(fields: [abs_student], references: [std_id])
+}
+
+model training_family {
+  trf_id        Int        @id @default(autoincrement())
+  trf_label     String?
+  trf_createdat DateTime?  @default(now()) @db.Timestamp(6)
+  trf_updatedat DateTime?  @db.Timestamp(6)
+  training      training[]
+}

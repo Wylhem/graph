@@ -1,0 +1,55 @@
+Person: per_id,
+:
+Profile: prf_id,
+:
+Users: usr_id,
+Users_person, 01 Users, 01 Person
+Person_profile, 01 Users, 01 Profile
+:
+
+Student: std_id,
+Stutend_person, 01 Student, 01 Person
+:
+Professor: pro_id,
+Professor_person, 01 Professor, 01 Person
+:
+
+Exam: exm_id,
+Exam_student, 0N Student, 01 Exam
+Exam_professor, 0N Professor, 01 Exam
+Exam_Subject, 01 Exam, 01 Subject
+
+Establishment: est_id,
+Establishment_site, 01 [parent_site] Establishment,  11 Establishment
+Training_establishment, 01 Training, 0N Establishment
+:
+Training: tra_id,
+:
+Training_session: trs_id,
+Training_Training_session,  0N Training, 01 Training_session
+:
+
+Subject: sub_id, 
+Subject_Training_Session, 01 Subject, 0N Training_session
+:
+
+Subject_session: sus_id,
+Subject_Session, 0N  Subject, 01 Subject_session,
+Subject_professor, 0N Professor, 01 Subject_session
+Subject_session_group, 1N Group, 11 Subject_session
+:
+Class: cls_id,
+Class_Training_session, 0N Training_session, 01 Class
+:
+Group: grp_id,
+Group_Class, 01 Group,  0N Class
+Group_Student, 01 Student, 0N Group
+:
+
+Class_Site: css_id,
+Class_site, 0N Establishment, 11 Class_Site
+Class_Lesson, 0N Class_Site, 01Subject_session
+
+
+
+ 
